@@ -1,5 +1,9 @@
+Note: Only changes is that code has been converted to python 3 using automated tool (2to3) and inplace autopep8 committed.
+
 Data Science from Scratch
 =========================
+
+
 
 Here's all the code and examples from my book __[Data Science from Scratch](http://joelgrus.com/2015/04/26/data-science-from-scratch-first-principles-with-python/)__.
 
