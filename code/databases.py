@@ -1,4 +1,4 @@
-from __future__ import division
+
 import math, random, re
 from collections import defaultdict
 
@@ -14,13 +14,13 @@ class Table:
     def insert(self, row_values):
         if len(row_values) != len(self.columns):
             raise TypeError("wrong number of elements")
-        row_dict = dict(zip(self.columns, row_values))
+        row_dict = dict(list(zip(self.columns, row_values)))
         self.rows.append(row_dict)
 
     def update(self, updates, predicate):
         for row in self.rows:
             if predicate(row):
-                for column, new_value in updates.iteritems():
+                for column, new_value in updates.items():
                     row[column] = new_value
 
     def delete(self, predicate=lambda row: True):
@@ -37,11 +37,11 @@ class Table:
             additional_columns = {}
 
         # new table for results
-        result_table = Table(keep_columns + additional_columns.keys())
+        result_table = Table(keep_columns + list(additional_columns.keys()))
 
         for row in self.rows:
             new_row = [row[column] for column in keep_columns]
-            for column_name, calculation in additional_columns.iteritems():
+            for column_name, calculation in additional_columns.items():
                 new_row.append(calculation(row))
             result_table.insert(new_row)
 
@@ -50,7 +50,7 @@ class Table:
     def where(self, predicate=lambda row: True):
         """return only the rows that satisfy the supplied predicate"""
         where_table = Table(self.columns)
-        where_table.rows = filter(predicate, self.rows)
+        where_table.rows = list(filter(predicate, self.rows))
         return where_table
 
     def limit(self, num_rows=None):
@@ -70,12 +70,12 @@ class Table:
             key = tuple(row[column] for column in group_by_columns)
             grouped_rows[key].append(row)
 
-        result_table = Table(group_by_columns + aggregates.keys())
+        result_table = Table(group_by_columns + list(aggregates.keys()))
 
-        for key, rows in grouped_rows.iteritems():
+        for key, rows in grouped_rows.items():
             if having is None or having(rows):
                 new_row = list(key)
-                for aggregate_name, aggregate_fn in aggregates.iteritems():
+                for aggregate_name, aggregate_fn in aggregates.items():
                     new_row.append(aggregate_fn(rows))
                 result_table.insert(new_row)
 
@@ -130,35 +130,35 @@ if __name__ == "__main__":
     users.insert([9, "Klein", 3])
     users.insert([10, "Jen", 1])
 
-    print "users table"
-    print users
-    print
+    print("users table")
+    print(users)
+    print()
 
     # SELECT
 
-    print "users.select()"
-    print users.select()
-    print
+    print("users.select()")
+    print(users.select())
+    print()
 
-    print "users.limit(2)"
-    print users.limit(2)
-    print
+    print("users.limit(2)")
+    print(users.limit(2))
+    print()
 
-    print "users.select(keep_columns=[\"user_id\"])"
-    print users.select(keep_columns=["user_id"])
-    print
+    print("users.select(keep_columns=[\"user_id\"])")
+    print(users.select(keep_columns=["user_id"]))
+    print()
 
-    print 'where(lambda row: row["name"] == "Dunn")'
-    print users.where(lambda row: row["name"] == "Dunn") \
-               .select(keep_columns=["user_id"])
-    print
+    print('where(lambda row: row["name"] == "Dunn")')
+    print(users.where(lambda row: row["name"] == "Dunn") \
+               .select(keep_columns=["user_id"]))
+    print()
 
     def name_len(row): return len(row["name"])
 
-    print 'with name_length:'
-    print users.select(keep_columns=[],
-             additional_columns = { "name_length" : name_len })
-    print
+    print('with name_length:')
+    print(users.select(keep_columns=[],
+             additional_columns = { "name_length" : name_len }))
+    print()
 
     # GROUP BY
 
@@ -170,9 +170,9 @@ if __name__ == "__main__":
                   aggregates={ "min_user_id" : min_user_id,
                                "num_users" : len })
 
-    print "stats by length"
-    print stats_by_length
-    print
+    print("stats by length")
+    print(stats_by_length)
+    print()
 
     def first_letter_of_name(row): 
         return row["name"][0] if row["name"] else ""
@@ -189,9 +189,9 @@ if __name__ == "__main__":
                   aggregates={ "avg_num_friends" : average_num_friends },
                   having=enough_friends)
 
-    print "avg friends by letter"
-    print avg_friends_by_letter
-    print
+    print("avg friends by letter")
+    print(avg_friends_by_letter)
+    print()
 
     def sum_user_ids(rows): return sum(row["user_id"] for row in rows)
 
@@ -200,9 +200,9 @@ if __name__ == "__main__":
         .group_by(group_by_columns=[],
                   aggregates={ "user_id_sum" : sum_user_ids })
 
-    print "user id sum"
-    print user_id_sum
-    print
+    print("user id sum")
+    print(user_id_sum)
+    print()
 
     # ORDER BY
 
@@ -210,9 +210,9 @@ if __name__ == "__main__":
         .order_by(lambda row: -row["avg_num_friends"]) \
         .limit(4)
 
-    print "friendliest letters"
-    print friendliest_letters
-    print
+    print("friendliest letters")
+    print(friendliest_letters)
+    print()
 
     # JOINs
 
@@ -227,9 +227,9 @@ if __name__ == "__main__":
     .where(lambda row: row["interest"] == "SQL") \
     .select(keep_columns=["name"])
 
-    print "sql users"
-    print sql_users
-    print
+    print("sql users")
+    print(sql_users)
+    print()
 
     def count_interests(rows):
         """counts how many rows have non-None interests"""
@@ -240,8 +240,8 @@ if __name__ == "__main__":
         .group_by(group_by_columns=["user_id"],
                   aggregates={"num_interests" : count_interests })
 
-    print "user interest counts"
-    print user_interest_counts
+    print("user interest counts")
+    print(user_interest_counts)
 
     # SUBQUERIES
 
@@ -252,5 +252,5 @@ if __name__ == "__main__":
     likes_sql_user_ids.group_by(group_by_columns=[],
                                 aggregates={ "min_user_id" : min_user_id })
 
-    print "likes sql user ids"
-    print likes_sql_user_ids
+    print("likes sql user ids")
+    print(likes_sql_user_ids)

@@ -1,5 +1,5 @@
-from __future__ import division
-from linear_algebra import squared_distance, vector_mean, distance
+
+from .linear_algebra import squared_distance, vector_mean, distance
 import math, random
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
@@ -13,7 +13,7 @@ class KMeans:
         
     def classify(self, input):
         """return the index of the cluster closest to the input"""
-        return min(range(self.k),
+        return min(list(range(self.k)),
                    key=lambda i: squared_distance(input, self.means[i]))
                    
     def train(self, inputs):
@@ -23,7 +23,7 @@ class KMeans:
         
         while True:
             # Find new assignments
-            new_assignments = map(self.classify, inputs)
+            new_assignments = list(map(self.classify, inputs))
 
             # If no assignments have changed, we're done.
             if assignments == new_assignments:                
@@ -43,14 +43,14 @@ def squared_clustering_errors(inputs, k):
     clusterer = KMeans(k)
     clusterer.train(inputs)
     means = clusterer.means
-    assignments = map(clusterer.classify, inputs)
+    assignments = list(map(clusterer.classify, inputs))
     
     return sum(squared_distance(input,means[cluster])
                for input, cluster in zip(inputs, assignments))
 
 def plot_squared_clustering_errors(plt):
 
-    ks = range(1, len(inputs) + 1)
+    ks = list(range(1, len(inputs) + 1))
     errors = [squared_clustering_errors(inputs, k) for k in ks]
 
     plt.plot(ks, errors)
@@ -130,7 +130,7 @@ def bottom_up_cluster(inputs, distance_agg=min):
         c1, c2 = min([(cluster1, cluster2)
                      for i, cluster1 in enumerate(clusters)
                      for cluster2 in clusters[:i]],
-                     key=lambda (x, y): cluster_distance(x, y, distance_agg))
+                     key=lambda x_y: cluster_distance(x_y[0], x_y[1], distance_agg))
 
         # remove them from the list of clusters
         clusters = [c for c in clusters if c != c1 and c != c2]
@@ -167,36 +167,36 @@ if __name__ == "__main__":
     random.seed(0) # so you get the same results as me
     clusterer = KMeans(3)
     clusterer.train(inputs)
-    print "3-means:"
-    print clusterer.means
-    print
+    print("3-means:")
+    print(clusterer.means)
+    print()
 
     random.seed(0)
     clusterer = KMeans(2)
     clusterer.train(inputs)
-    print "2-means:"
-    print clusterer.means
-    print
+    print("2-means:")
+    print(clusterer.means)
+    print()
 
-    print "errors as a function of k"
+    print("errors as a function of k")
 
     for k in range(1, len(inputs) + 1):
-        print k, squared_clustering_errors(inputs, k)
-    print
+        print(k, squared_clustering_errors(inputs, k))
+    print()
 
 
-    print "bottom up hierarchical clustering"
+    print("bottom up hierarchical clustering")
 
     base_cluster = bottom_up_cluster(inputs)
-    print base_cluster
+    print(base_cluster)
 
-    print
-    print "three clusters, min:"
+    print()
+    print("three clusters, min:")
     for cluster in generate_clusters(base_cluster, 3):
-        print get_values(cluster)
+        print(get_values(cluster))
 
-    print
-    print "three clusters, max:"
+    print()
+    print("three clusters, max:")
     base_cluster = bottom_up_cluster(inputs, max)
     for cluster in generate_clusters(base_cluster, 3):
-        print get_values(cluster)
+        print(get_values(cluster))

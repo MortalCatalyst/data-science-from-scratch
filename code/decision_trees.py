@@ -1,4 +1,4 @@
-from __future__ import division
+
 from collections import Counter, defaultdict
 from functools import partial
 import math, random
@@ -10,7 +10,7 @@ def entropy(class_probabilities):
 def class_probabilities(labels):
     total_count = len(labels)
     return [count / total_count
-            for count in Counter(labels).values()]
+            for count in list(Counter(labels).values())]
 
 def data_entropy(labeled_data):        
     labels = [label for _, label in labeled_data]
@@ -41,7 +41,7 @@ def partition_by(inputs, attribute):
 def partition_entropy_by(inputs,attribute):
     """computes the entropy corresponding to the given partition"""        
     partitions = partition_by(inputs, attribute)
-    return partition_entropy(partitions.values())        
+    return partition_entropy(list(partitions.values()))        
 
 def classify(tree, input):
     """classify the input using the given decision tree"""
@@ -66,7 +66,7 @@ def build_tree_id3(inputs, split_candidates=None):
     # if this is our first pass, 
     # all keys of the first input are split candidates
     if split_candidates is None:
-        split_candidates = inputs[0][0].keys()
+        split_candidates = list(inputs[0][0].keys())
 
     # count Trues and Falses in the inputs
     num_inputs = len(inputs)
@@ -92,7 +92,7 @@ def build_tree_id3(inputs, split_candidates=None):
     
     # recursively build the subtrees
     subtrees = { attribute : build_tree_id3(subset, new_candidates)
-                 for attribute, subset in partitions.iteritems() }
+                 for attribute, subset in partitions.items() }
 
     subtrees[None] = num_trues > num_falses # default case
 
@@ -124,32 +124,32 @@ if __name__ == "__main__":
     ]
 
     for key in ['level','lang','tweets','phd']:
-        print key, partition_entropy_by(inputs, key)
-    print
+        print(key, partition_entropy_by(inputs, key))
+    print()
 
     senior_inputs = [(input, label)
                      for input, label in inputs if input["level"] == "Senior"]
 
     for key in ['lang', 'tweets', 'phd']:
-        print key, partition_entropy_by(senior_inputs, key)
-    print
+        print(key, partition_entropy_by(senior_inputs, key))
+    print()
 
-    print "building the tree"
+    print("building the tree")
     tree = build_tree_id3(inputs)
-    print tree
+    print(tree)
 
-    print "Junior / Java / tweets / no phd", classify(tree, 
+    print("Junior / Java / tweets / no phd", classify(tree, 
         { "level" : "Junior", 
           "lang" : "Java", 
           "tweets" : "yes", 
-          "phd" : "no"} ) 
+          "phd" : "no"} )) 
 
-    print "Junior / Java / tweets / phd", classify(tree, 
+    print("Junior / Java / tweets / phd", classify(tree, 
         { "level" : "Junior", 
                  "lang" : "Java", 
                  "tweets" : "yes", 
-                 "phd" : "yes"} )
+                 "phd" : "yes"} ))
 
-    print "Intern", classify(tree, { "level" : "Intern" } )
-    print "Senior", classify(tree, { "level" : "Senior" } )
+    print("Intern", classify(tree, { "level" : "Intern" } ))
+    print("Senior", classify(tree, { "level" : "Senior" } ))
 

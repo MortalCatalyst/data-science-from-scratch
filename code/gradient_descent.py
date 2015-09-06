@@ -1,6 +1,6 @@
-from __future__ import division
+
 from collections import Counter
-from linear_algebra import distance, vector_subtract, scalar_multiply
+from .linear_algebra import distance, vector_subtract, scalar_multiply
 import math, random
 
 def sum_of_squares(v):
@@ -22,9 +22,9 @@ def plot_estimated_derivative():
 
     # plot to show they're basically the same
     import matplotlib.pyplot as plt
-    x = range(-10,10)
-    plt.plot(x, map(derivative, x), 'rx')           # red  x
-    plt.plot(x, map(derivative_estimate, x), 'b+')  # blue +
+    x = list(range(-10,10))
+    plt.plot(x, list(map(derivative, x)), 'rx')           # red  x
+    plt.plot(x, list(map(derivative_estimate, x)), 'b+')  # blue +
     plt.show()                                      # purple *, hopefully
 
 def partial_difference_quotient(f, v, i, h):
@@ -114,7 +114,7 @@ def in_random_order(data):
 
 def minimize_stochastic(target_fn, gradient_fn, x, y, theta_0, alpha_0=0.01):
 
-    data = zip(x, y)
+    data = list(zip(x, y))
     theta = theta_0                             # initial guess
     alpha = alpha_0                             # initial step size
     min_theta, min_value = None, float("inf")   # the minimum so far
@@ -149,7 +149,7 @@ def maximize_stochastic(target_fn, gradient_fn, x, y, theta_0, alpha_0=0.01):
 
 if __name__ == "__main__":
 
-    print "using the gradient"
+    print("using the gradient")
 
     v = [random.randint(-10,10) for i in range(3)]
 
@@ -163,16 +163,16 @@ if __name__ == "__main__":
             break
         v = next_v                              # continue if we're not
 
-    print "minimum v", v
-    print "minimum value", sum_of_squares(v)
-    print
+    print("minimum v", v)
+    print("minimum value", sum_of_squares(v))
+    print()
 
 
-    print "using minimize_batch"
+    print("using minimize_batch")
 
     v = [random.randint(-10,10) for i in range(3)]
 
     v = minimize_batch(sum_of_squares, sum_of_squares_gradient, v)
 
-    print "minimum v", v
-    print "minimum value", sum_of_squares(v)
+    print("minimum v", v)
+    print("minimum value", sum_of_squares(v))
