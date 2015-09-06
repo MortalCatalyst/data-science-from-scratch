@@ -18,6 +18,7 @@ for line in lines:
         lat, lon = s.groups()
         points.append((float(lon), float(lat)))
 
+
 def plot_state_borders(plt, color='0.8'):
     for (lon1, lat1), (lon2, lat2) in segments:
         plt.plot([lon1, lon2], [lat1, lat2], color=color)

@@ -11,11 +11,11 @@ if __name__ == "__main__":
         print("usage: most_common_words.py num_words")
         sys.exit(1)   # non-zero exit code indicates error
 
-    counter = Counter(word.lower()                      
-                      for line in sys.stdin             
-                      for word in line.strip().split()  
-                      if word)                          
-            
+    counter = Counter(word.lower()
+                      for line in sys.stdin
+                      for word in line.strip().split()
+                      if word)
+
     for word, count in counter.most_common(num_words):
         sys.stdout.write(str(count))
         sys.stdout.write("\t")

@@ -1,8 +1,10 @@
 
 from .linear_algebra import squared_distance, vector_mean, distance
-import math, random
+import math
+import random
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
+
 
 class KMeans:
     """performs k-means clustering"""
@@ -10,33 +12,34 @@ class KMeans:
     def __init__(self, k):
         self.k = k          # number of clusters
         self.means = None   # means of clusters
-        
+
     def classify(self, input):
         """return the index of the cluster closest to the input"""
         return min(list(range(self.k)),
                    key=lambda i: squared_distance(input, self.means[i]))
-                   
+
     def train(self, inputs):
-    
+
         self.means = random.sample(inputs, self.k)
         assignments = None
-        
+
         while True:
             # Find new assignments
             new_assignments = list(map(self.classify, inputs))
 
             # If no assignments have changed, we're done.
-            if assignments == new_assignments:                
+            if assignments == new_assignments:
                 return
 
             # Otherwise keep the new assignments,
-            assignments = new_assignments    
+            assignments = new_assignments
 
             for i in range(self.k):
                 i_points = [p for p, a in zip(inputs, assignments) if a == i]
                 # avoid divide-by-zero if i_points is empty
-                if i_points:                                
-                    self.means[i] = vector_mean(i_points)    
+                if i_points:
+                    self.means[i] = vector_mean(i_points)
+
 
 def squared_clustering_errors(inputs, k):
     """finds the total squared error from k-means clustering the inputs"""
@@ -44,9 +47,10 @@ def squared_clustering_errors(inputs, k):
     clusterer.train(inputs)
     means = clusterer.means
     assignments = list(map(clusterer.classify, inputs))
-    
-    return sum(squared_distance(input,means[cluster])
+
+    return sum(squared_distance(input, means[cluster])
                for input, cluster in zip(inputs, assignments))
+
 
 def plot_squared_clustering_errors(plt):
 
@@ -63,15 +67,16 @@ def plot_squared_clustering_errors(plt):
 # using clustering to recolor an image
 #
 
+
 def recolor_image(input_file, k=5):
 
     img = mpimg.imread(path_to_png_file)
     pixels = [pixel for row in img for pixel in row]
     clusterer = KMeans(k)
-    clusterer.train(pixels) # this might take a while    
+    clusterer.train(pixels)  # this might take a while
 
     def recolor(pixel):
-        cluster = clusterer.classify(pixel) # index of the closest cluster
+        cluster = clusterer.classify(pixel)  # index of the closest cluster
         return clusterer.means[cluster]     # mean of the closest cluster
 
     new_img = [[recolor(pixel) for pixel in row]
@@ -85,9 +90,11 @@ def recolor_image(input_file, k=5):
 # hierarchical clustering
 #
 
+
 def is_leaf(cluster):
     """a cluster is a leaf if it has length 1"""
     return len(cluster) == 1
+
 
 def get_children(cluster):
     """returns the two children of this cluster if it's a merged cluster;
@@ -97,39 +104,43 @@ def get_children(cluster):
     else:
         return cluster[1]
 
+
 def get_values(cluster):
     """returns the value in this cluster (if it's a leaf cluster)
     or all the values in the leaf clusters below it (if it's not)"""
     if is_leaf(cluster):
-        return cluster # is already a 1-tuple containing value
+        return cluster  # is already a 1-tuple containing value
     else:
         return [value
                 for child in get_children(cluster)
                 for value in get_values(child)]
 
+
 def cluster_distance(cluster1, cluster2, distance_agg=min):
     """finds the aggregate distance between elements of cluster1
     and elements of cluster2"""
     return distance_agg([distance(input1, input2)
-                        for input1 in get_values(cluster1)
-                        for input2 in get_values(cluster2)])
+                         for input1 in get_values(cluster1)
+                         for input2 in get_values(cluster2)])
+
 
 def get_merge_order(cluster):
     if is_leaf(cluster):
         return float('inf')
     else:
-        return cluster[0] # merge_order is first element of 2-tuple
+        return cluster[0]  # merge_order is first element of 2-tuple
+
 
 def bottom_up_cluster(inputs, distance_agg=min):
     # start with every input a leaf cluster / 1-tuple
     clusters = [(input,) for input in inputs]
-    
+
     # as long as we have more than one cluster left...
     while len(clusters) > 1:
         # find the two closest clusters
         c1, c2 = min([(cluster1, cluster2)
-                     for i, cluster1 in enumerate(clusters)
-                     for cluster2 in clusters[:i]],
+                      for i, cluster1 in enumerate(clusters)
+                      for cluster2 in clusters[:i]],
                      key=lambda x_y: cluster_distance(x_y[0], x_y[1], distance_agg))
 
         # remove them from the list of clusters
@@ -144,10 +155,11 @@ def bottom_up_cluster(inputs, distance_agg=min):
     # when there's only one cluster left, return it
     return clusters[0]
 
+
 def generate_clusters(base_cluster, num_clusters):
     # start with a list with just the base cluster
     clusters = [base_cluster]
-    
+
     # as long as we don't have enough clusters yet...
     while len(clusters) < num_clusters:
         # choose the last-merged of our clusters
@@ -162,9 +174,10 @@ def generate_clusters(base_cluster, num_clusters):
 
 if __name__ == "__main__":
 
-    inputs = [[-14,-5],[13,13],[20,23],[-19,-11],[-9,-16],[21,27],[-49,15],[26,13],[-46,5],[-34,-1],[11,15],[-49,0],[-22,-16],[19,28],[-12,-8],[-13,-19],[-41,8],[-11,-6],[-25,-9],[-18,-3]]
+    inputs = [[-14, -5], [13, 13], [20, 23], [-19, -11], [-9, -16], [21, 27], [-49, 15], [26, 13], [-46, 5], [-34, -1],
+              [11, 15], [-49, 0], [-22, -16], [19, 28], [-12, -8], [-13, -19], [-41, 8], [-11, -6], [-25, -9], [-18, -3]]
 
-    random.seed(0) # so you get the same results as me
+    random.seed(0)  # so you get the same results as me
     clusterer = KMeans(3)
     clusterer.train(inputs)
     print("3-means:")
@@ -183,7 +196,6 @@ if __name__ == "__main__":
     for k in range(1, len(inputs) + 1):
         print(k, squared_clustering_errors(inputs, k))
     print()
-
 
     print("bottom up hierarchical clustering")
 

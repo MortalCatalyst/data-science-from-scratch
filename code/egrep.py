@@ -1,5 +1,6 @@
 # egrep.py
-import sys, re
+import sys
+import re
 
 if __name__ == "__main__":
 

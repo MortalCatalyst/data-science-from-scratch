@@ -1,8 +1,12 @@
 
-import math, random, re
+import math
+import random
+import re
 from collections import defaultdict
 
+
 class Table:
+
     def __init__(self, columns):
         self.columns = columns
         self.rows = []
@@ -56,7 +60,7 @@ class Table:
     def limit(self, num_rows=None):
         """return only the first num_rows rows"""
         limit_table = Table(self.columns)
-        limit_table.rows = (self.rows[:num_rows] 
+        limit_table.rows = (self.rows[:num_rows]
                             if num_rows is not None
                             else self.rows)
         return limit_table
@@ -91,7 +95,7 @@ class Table:
         join_on_columns = [c for c in self.columns           # columns in
                            if c in other_table.columns]      # both tables
 
-        additional_columns = [c for c in other_table.columns # columns only
+        additional_columns = [c for c in other_table.columns  # columns only
                               if c not in join_on_columns]   # in right table
 
         # all columns from left table + additional_columns from right table
@@ -149,7 +153,7 @@ if __name__ == "__main__":
     print()
 
     print('where(lambda row: row["name"] == "Dunn")')
-    print(users.where(lambda row: row["name"] == "Dunn") \
+    print(users.where(lambda row: row["name"] == "Dunn")
                .select(keep_columns=["user_id"]))
     print()
 
@@ -157,7 +161,7 @@ if __name__ == "__main__":
 
     print('with name_length:')
     print(users.select(keep_columns=[],
-             additional_columns = { "name_length" : name_len }))
+                       additional_columns={"name_length": name_len}))
     print()
 
     # GROUP BY
@@ -167,14 +171,14 @@ if __name__ == "__main__":
     stats_by_length = users \
         .select(additional_columns={"name_len" : name_len}) \
         .group_by(group_by_columns=["name_len"],
-                  aggregates={ "min_user_id" : min_user_id,
-                               "num_users" : len })
+                  aggregates={"min_user_id": min_user_id,
+                              "num_users": len})
 
     print("stats by length")
     print(stats_by_length)
     print()
 
-    def first_letter_of_name(row): 
+    def first_letter_of_name(row):
         return row["name"][0] if row["name"] else ""
 
     def average_num_friends(rows):
@@ -186,7 +190,7 @@ if __name__ == "__main__":
     avg_friends_by_letter = users \
         .select(additional_columns={'first_letter' : first_letter_of_name}) \
         .group_by(group_by_columns=['first_letter'],
-                  aggregates={ "avg_num_friends" : average_num_friends },
+                  aggregates={"avg_num_friends": average_num_friends},
                   having=enough_friends)
 
     print("avg friends by letter")
@@ -198,7 +202,7 @@ if __name__ == "__main__":
     user_id_sum = users \
         .where(lambda row: row["user_id"] > 1) \
         .group_by(group_by_columns=[],
-                  aggregates={ "user_id_sum" : sum_user_ids })
+                  aggregates={"user_id_sum": sum_user_ids})
 
     print("user id sum")
     print(user_id_sum)
@@ -223,9 +227,9 @@ if __name__ == "__main__":
     user_interests.insert([2, "MySQL"])
 
     sql_users = users \
-    .join(user_interests) \
-    .where(lambda row: row["interest"] == "SQL") \
-    .select(keep_columns=["name"])
+        .join(user_interests) \
+        .where(lambda row: row["interest"] == "SQL") \
+        .select(keep_columns=["name"])
 
     print("sql users")
     print(sql_users)
@@ -238,7 +242,7 @@ if __name__ == "__main__":
     user_interest_counts = users \
         .join(user_interests, left_join=True) \
         .group_by(group_by_columns=["user_id"],
-                  aggregates={"num_interests" : count_interests })
+                  aggregates={"num_interests": count_interests})
 
     print("user interest counts")
     print(user_interest_counts)
@@ -250,7 +254,7 @@ if __name__ == "__main__":
         .select(keep_columns=['user_id'])
 
     likes_sql_user_ids.group_by(group_by_columns=[],
-                                aggregates={ "min_user_id" : min_user_id })
+                                aggregates={"min_user_id": min_user_id})
 
     print("likes sql user ids")
     print(likes_sql_user_ids)

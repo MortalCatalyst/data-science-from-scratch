@@ -1,24 +1,27 @@
 
-import math, random, re
+import math
+import random
+import re
 from collections import defaultdict, Counter
 from bs4 import BeautifulSoup
 import requests
 
+
 def plot_resumes(plt):
-    data = [ ("big data", 100, 15), ("Hadoop", 95, 25), ("Python", 75, 50),
-         ("R", 50, 40), ("machine learning", 80, 20), ("statistics", 20, 60),
-         ("data science", 60, 70), ("analytics", 90, 3),
-         ("team player", 85, 85), ("dynamic", 2, 90), ("synergies", 70, 0),
-         ("actionable insights", 40, 30), ("think out of the box", 45, 10),
-         ("self-starter", 30, 50), ("customer focus", 65, 15),
-         ("thought leadership", 35, 35)]
+    data = [("big data", 100, 15), ("Hadoop", 95, 25), ("Python", 75, 50),
+            ("R", 50, 40), ("machine learning", 80, 20), ("statistics", 20, 60),
+            ("data science", 60, 70), ("analytics", 90, 3),
+            ("team player", 85, 85), ("dynamic", 2, 90), ("synergies", 70, 0),
+            ("actionable insights", 40, 30), ("think out of the box", 45, 10),
+            ("self-starter", 30, 50), ("customer focus", 65, 15),
+            ("thought leadership", 35, 35)]
 
     def text_size(total):
         """equals 8 if total is 0, 28 if total is 200"""
         return 8 + total / 200 * 20
 
     for word, job_popularity, resume_popularity in data:
-        plt.text(job_popularity, resume_popularity, word, 
+        plt.text(job_popularity, resume_popularity, word,
                  ha='center', va='center',
                  size=text_size(job_popularity + resume_popularity))
     plt.xlabel("Popularity on Job Postings")
@@ -30,8 +33,10 @@ def plot_resumes(plt):
 # n-gram models
 #
 
+
 def fix_unicode(text):
     return text.replace("\u2019", "'")
+
 
 def get_document():
 
@@ -40,16 +45,17 @@ def get_document():
     soup = BeautifulSoup(html, 'html5lib')
 
     content = soup.find("div", "entry-content")        # find entry-content div
-    regex = r"[\w']+|[\.]"                             # matches a word or a period
+    # matches a word or a period
+    regex = r"[\w']+|[\.]"
 
     document = []
-
 
     for paragraph in content("p"):
         words = re.findall(regex, fix_unicode(paragraph.text))
         document.extend(words)
 
     return document
+
 
 def generate_using_bigrams(transitions):
     current = "."   # this means the next word will start a sentence
@@ -58,7 +64,9 @@ def generate_using_bigrams(transitions):
         next_word_candidates = transitions[current]    # bigrams (current, _)
         current = random.choice(next_word_candidates)  # choose one at random
         result.append(current)                         # append it to results
-        if current == ".": return " ".join(result)     # if "." we're done
+        if current == ".":
+            return " ".join(result)     # if "." we're done
+
 
 def generate_using_trigrams(starts, trigram_transitions):
     current = random.choice(starts)   # choose a random starting word
@@ -71,29 +79,33 @@ def generate_using_trigrams(starts, trigram_transitions):
         prev, current = current, next
         result.append(current)
 
-        if current == ".": 
+        if current == ".":
             return " ".join(result)
+
 
 def is_terminal(token):
     return token[0] != "_"
+
 
 def expand(grammar, tokens):
     for i, token in enumerate(tokens):
 
         # ignore terminals
-        if is_terminal(token): continue
-        
+        if is_terminal(token):
+            continue
+
         # choose a replacement at random
         replacement = random.choice(grammar[token])
 
         if is_terminal(replacement):
             tokens[i] = replacement
         else:
-            tokens = tokens[:i] + replacement.split() + tokens[(i+1):]
+            tokens = tokens[:i] + replacement.split() + tokens[(i + 1):]
         return expand(grammar, tokens)
 
     # if we get here we had all terminals and are done
     return tokens
+
 
 def generate_sentence(grammar):
     return expand(grammar, ["_S"])
@@ -102,17 +114,21 @@ def generate_sentence(grammar):
 # Gibbs Sampling
 #
 
-def roll_a_die(): 
-    return random.choice([1,2,3,4,5,6])
+
+def roll_a_die():
+    return random.choice([1, 2, 3, 4, 5, 6])
+
 
 def direct_sample():
     d1 = roll_a_die()
     d2 = roll_a_die()
     return d1, d1 + d2
 
+
 def random_y_given_x(x):
     """equally likely to be x + 1, x + 2, ... , x + 6"""
     return x + roll_a_die()
+
 
 def random_x_given_y(y):
     if y <= 7:
@@ -124,12 +140,14 @@ def random_x_given_y(y):
         # (total - 6), (total - 5), ..., 6
         return random.randrange(y - 6, 7)
 
+
 def gibbs_sample(num_iters=100):
-    x, y = 1, 2 # doesn't really matter
+    x, y = 1, 2  # doesn't really matter
     for _ in range(num_iters):
         x = random_x_given_y(y)
         y = random_y_given_x(x)
-    return x, y 
+    return x, y
+
 
 def compare_distributions(num_samples=1000):
     counts = defaultdict(lambda: [0, 0])
@@ -142,12 +160,14 @@ def compare_distributions(num_samples=1000):
 # TOPIC MODELING
 #
 
+
 def sample_from(weights):
     total = sum(weights)
     rnd = total * random.random()       # uniform between 0 and total
-    for i, w in enumerate(weights):     
+    for i, w in enumerate(weights):
         rnd -= w                        # return the smallest i such that
-        if rnd <= 0: return i           # sum(weights[:(i+1)]) >= rnd
+        if rnd <= 0:
+            return i           # sum(weights[:(i+1)]) >= rnd
 
 documents = [
     ["Hadoop", "Big Data", "HBase", "Java", "Spark", "Storm", "Cassandra"],
@@ -183,19 +203,22 @@ W = len(distinct_words)
 
 D = len(documents)
 
+
 def p_topic_given_document(topic, d, alpha=0.1):
     """the fraction of words in document _d_
     that are assigned to _topic_ (plus some smoothing)"""
 
-    return ((document_topic_counts[d][topic] + alpha) / 
+    return ((document_topic_counts[d][topic] + alpha) /
             (document_lengths[d] + K * alpha))
+
 
 def p_word_given_topic(word, topic, beta=0.1):
     """the fraction of words assigned to _topic_
     that equal _word_ (plus some smoothing)"""
 
-    return ((topic_word_counts[topic][word] + beta) / 
+    return ((topic_word_counts[topic][word] + beta) /
             (topic_counts[topic] + W * beta))
+
 
 def topic_weight(d, word, k):
     """given a document and a word in that document,
@@ -203,8 +226,9 @@ def topic_weight(d, word, k):
 
     return p_word_given_topic(word, k) * p_topic_given_document(k, d)
 
+
 def choose_new_topic(d, word):
-    return sample_from([topic_weight(d, word, k) 
+    return sample_from([topic_weight(d, word, k)
                         for k in range(K)])
 
 
@@ -220,7 +244,7 @@ for d in range(D):
 
 for iter in range(1000):
     for d in range(D):
-        for i, (word, topic) in enumerate(zip(documents[d], 
+        for i, (word, topic) in enumerate(zip(documents[d],
                                               document_topics[d])):
 
             # remove this word / topic from the counts
@@ -274,15 +298,15 @@ if __name__ == "__main__":
     print()
 
     grammar = {
-        "_S"  : ["_NP _VP"],
-        "_NP" : ["_N", 
-                 "_A _NP _P _A _N"],
-        "_VP" : ["_V", 
-                 "_V _NP"],
-        "_N"  : ["data science", "Python", "regression"],
-        "_A"  : ["big", "linear", "logistic"],
-        "_P"  : ["about", "near"],
-        "_V"  : ["learns", "trains", "tests", "is"]
+        "_S": ["_NP _VP"],
+        "_NP": ["_N",
+                "_A _NP _P _A _N"],
+        "_VP": ["_V",
+                "_V _NP"],
+        "_N": ["data science", "Python", "regression"],
+        "_A": ["big", "linear", "logistic"],
+        "_P": ["about", "near"],
+        "_V": ["learns", "trains", "tests", "is"]
     }
 
     print("grammar sentences")
@@ -295,12 +319,12 @@ if __name__ == "__main__":
     for roll, (gibbs, direct) in comparison.items():
         print(roll, gibbs, direct)
 
-
     # topic MODELING
 
     for k, word_counts in enumerate(topic_word_counts):
         for word, count in word_counts.most_common():
-            if count > 0: print(k, word, count)
+            if count > 0:
+                print(k, word, count)
 
     topic_names = ["Big Data and programming languages",
                    "Python and statistics",

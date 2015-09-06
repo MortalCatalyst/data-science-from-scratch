@@ -1,5 +1,6 @@
 
-import math, random
+import math
+import random
 from collections import defaultdict, Counter
 from .linear_algebra import dot
 
@@ -25,8 +26,9 @@ popular_interests = Counter(interest
                             for user_interests in users_interests
                             for interest in user_interests).most_common()
 
+
 def most_popular_new_interests(user_interests, max_results=5):
-    suggestions = [(interest, frequency) 
+    suggestions = [(interest, frequency)
                    for interest, frequency in popular_interests
                    if interest not in user_interests]
     return suggestions[:max_results]
@@ -35,12 +37,14 @@ def most_popular_new_interests(user_interests, max_results=5):
 # user-based filtering
 #
 
+
 def cosine_similarity(v, w):
     return dot(v, w) / math.sqrt(dot(v, v) * dot(w, w))
 
-unique_interests = sorted(list({ interest 
-                                 for user_interests in users_interests
-                                 for interest in user_interests }))
+unique_interests = sorted(list({interest
+                                for user_interests in users_interests
+                                for interest in user_interests}))
+
 
 def make_user_interest_vector(user_interests):
     """given a list of interests, produce a vector whose i-th element is 1
@@ -54,10 +58,11 @@ user_similarities = [[cosine_similarity(interest_vector_i, interest_vector_j)
                       for interest_vector_j in user_interest_matrix]
                      for interest_vector_i in user_interest_matrix]
 
+
 def most_similar_users_to(user_id):
     pairs = [(other_user_id, similarity)                      # find other
              for other_user_id, similarity in                 # users with
-                enumerate(user_similarities[user_id])         # nonzero 
+             enumerate(user_similarities[user_id])         # nonzero
              if user_id != other_user_id and similarity > 0]  # similarity
 
     return sorted(pairs,                                      # sort them
@@ -81,7 +86,7 @@ def user_based_suggestions(user_id, include_current_interests=False):
     if include_current_interests:
         return suggestions
     else:
-        return [(suggestion, weight) 
+        return [(suggestion, weight)
                 for suggestion, weight in suggestions
                 if suggestion not in users_interests[user_id]]
 
@@ -97,6 +102,7 @@ interest_similarities = [[cosine_similarity(user_vector_i, user_vector_j)
                           for user_vector_j in interest_user_matrix]
                          for user_vector_i in interest_user_matrix]
 
+
 def most_similar_interests_to(interest_id):
     similarities = interest_similarities[interest_id]
     pairs = [(unique_interests[other_interest_id], similarity)
@@ -105,6 +111,7 @@ def most_similar_interests_to(interest_id):
     return sorted(pairs,
                   key=lambda __similarity1: __similarity1[1],
                   reverse=True)
+
 
 def item_based_suggestions(user_id, include_current_interests=False):
     suggestions = defaultdict(float)
@@ -122,7 +129,7 @@ def item_based_suggestions(user_id, include_current_interests=False):
     if include_current_interests:
         return suggestions
     else:
-        return [(suggestion, weight) 
+        return [(suggestion, weight)
                 for suggestion, weight in suggestions
                 if suggestion not in users_interests[user_id]]
 
@@ -134,12 +141,17 @@ if __name__ == "__main__":
     print()
 
     print("Most Popular New Interests")
-    print("already like:", ["NoSQL", "MongoDB", "Cassandra", "HBase", "Postgres"])
-    print(most_popular_new_interests(["NoSQL", "MongoDB", "Cassandra", "HBase", "Postgres"]))
+    print("already like:", ["NoSQL", "MongoDB",
+                            "Cassandra", "HBase", "Postgres"])
+    print(most_popular_new_interests(
+        ["NoSQL", "MongoDB", "Cassandra", "HBase", "Postgres"]))
     print()
-    print("already like:", ["R", "Python", "statistics", "regression", "probability"])
-    print(most_popular_new_interests(["R", "Python", "statistics", "regression", "probability"]))
-    print()    
+    print(
+        "already like:", [
+            "R", "Python", "statistics", "regression", "probability"])
+    print(most_popular_new_interests(
+        ["R", "Python", "statistics", "regression", "probability"]))
+    print()
 
     print("User based similarity")
     print("most similar to 0")
@@ -156,4 +168,3 @@ if __name__ == "__main__":
 
     print("suggestions for user 0")
     print(item_based_suggestions(0))
-
